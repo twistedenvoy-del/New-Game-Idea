@@ -57,7 +57,7 @@ function explore() {
 
 const commonHandlers = {
     rest: restAtCampsite,
-    combat: function() { startCombat(getRandomEnemy()); },
+    combat: function() { startCombat(getScaledEnemy(getRandomEnemy())); },
     investigate: function() { investigateAvailable = true; document.getElementById("investigate-button").style.display = "block"; },
     flavor: function() { console.log("You found nothing of interest."); },
 };
@@ -69,7 +69,7 @@ function handleCommon () {
 }
 
 const uncommonHandlers = {
-    combat: function() { startCombat(getRandomEnemy()); },
+    combat: function() { startCombat(getScaledEnemy(getRandomEnemy())); },
     investigate: function() { investigateAvailable = true; document.getElementById("investigate-button").style.display = "block"; },
     flavor: function() { console.log("You found nothing of interest."); },
     loot: function() { loot(5, 15, 10, 20); }
@@ -82,7 +82,7 @@ function handleUncommon() {
 }
 
 const rareHandlers = {
-    combat: function() { startCombat(getRandomEnemy()); },
+    combat: function() { startCombat(getScaledEnemy(getRandomEnemy())); },
     investigate: function() { investigateAvailable = true; document.getElementById("investigate-button").style.display = "block"; },
     flavor: function() { console.log("You found nothing of interest."); },
     loot: function() { loot(25, 35, 30, 40); }
@@ -108,7 +108,7 @@ function investigate() {
         run.gold += 10;
     } else {
         console.log("You encountered an enemy!");
-        startCombat(getRandomEnemy());
+        startCombat(getScaledEnemy(getRandomEnemy()));
     }
 }
 
@@ -118,6 +118,19 @@ function startCombat(enemy) {
     currentEnemy = {...enemy};
     document.getElementById("combat-menu").style.display = "block";
     ui.updateUI();
+}
+
+let enemyScaling = {health: 0.15, attack: 0.07, defense: 0.02};
+
+function getScaledEnemy(enemy) {
+    let scaledEnemy = {...enemy};
+    let rolledTier = rollTier(tiers.enemyStrength);
+    let multiplier = tiers.enemyStrengthMultiplier[rolledTier];
+    let levelScale = run.currentLevel - 1;
+    scaledEnemy.health = scaledEnemy.health * (1 + levelScale * enemyScaling.health) * multiplier;
+    scaledEnemy.attack = scaledEnemy.attack * (1 + levelScale * enemyScaling.attack) * multiplier;
+    scaledEnemy.defense = scaledEnemy.defense * (1 + levelScale * enemyScaling.defense) * multiplier;
+    return scaledEnemy;
 }
 
 function playerAttack(enemy) {
