@@ -1,8 +1,124 @@
 let currentEnemy = null;
 let isDefending = false;
 let expGainAmount = 5;
-let pointsToAllocate = [0, 0, 0, 0, 0, 0]; 
 let staged = { str: 0, dex: 0, end: 0, int: 0, cha: 0, luck: 0 };
+let investigateAvailable = false;
+
+//---utilities---//
+
+function rollTier(tiersObject) {
+    let roll = Math.random();
+    let total = 0;
+
+    for (let tier in tiersObject) {
+        total += tiersObject[tier];
+        if (roll < total) {
+            return tier
+        }
+    }
+}
+
+function getRandomAmount(min, max) {
+    let span = max-min;
+
+    let amount = Math.floor(Math.random() * span + min);
+    return amount;
+}
+
+//---Exploration and encounters---//
+
+const handlers = {
+    common: handleCommon, 
+    uncommon: handleUncommon, 
+    rare: handleRare, 
+    legendary: handleLegendary
+};
+
+function loot(goldMin, goldMax, expMin, expMax) {
+    let result = Math.random() < 0.50;
+
+    if (result) {
+        let goldAmount = getRandomAmount(goldMin, goldMax);
+        run.gold += goldAmount;
+        alert(`You received ${goldAmount} gold`);
+    }
+    else {
+        let expAmount = getRandomAmount(expMax, expMax);
+        expGain(expAmount);
+        alert(`You received ${expAmount} exp`);
+    }
+}
+
+function explore() {
+    let roll = rollTier(tiers.encounters);
+    console.log(roll);
+    handlers[roll]();
+}
+
+const commonHandlers = {
+    rest: restAtCampsite,
+    combat: function() { startCombat(getRandomEnemy()); },
+    investigate: function() { investigateAvailable = true; document.getElementById("investigate-button").style.display = "block"; },
+    flavor: function() { console.log("You found nothing of interest."); },
+};
+
+function handleCommon () {
+    let outcome = rollTier(tiers.commonOutcomes);
+    commonHandlers[outcome]();
+    console.log(outcome);;
+}
+
+const uncommonHandlers = {
+    combat: function() { startCombat(getRandomEnemy()); },
+    investigate: function() { investigateAvailable = true; document.getElementById("investigate-button").style.display = "block"; },
+    flavor: function() { console.log("You found nothing of interest."); },
+    loot: function() { loot(5, 15, 10, 20); }
+};
+
+function handleUncommon() {
+    let outcome = rollTier(tiers.eventOutcomes);
+    uncommonHandlers[outcome]();
+    console.log(outcome);
+}
+
+const rareHandlers = {
+    combat: function() { startCombat(getRandomEnemy()); },
+    investigate: function() { investigateAvailable = true; document.getElementById("investigate-button").style.display = "block"; },
+    flavor: function() { console.log("You found nothing of interest."); },
+    loot: function() { loot(25, 35, 30, 40); }
+};
+
+function handleRare() {
+    let outcome = rollTier(tiers.eventOutcomes);
+    rareHandlers[outcome]();
+    console.log(outcome);
+}
+
+function handleLegendary() {
+    loot(70, 90, 130, 150);
+    console.log(outcome);
+}
+
+function investigate() {
+    let roll = rollTier(tiers.investigate);
+    if (roll === "flavor") {
+        console.log("You found nothing.");
+    } else if (roll === "encounter") {
+        console.log("You found a small amount of gold!");
+        run.gold += 10;
+    } else {
+        console.log("You encountered an enemy!");
+        startCombat(getRandomEnemy());
+    }
+}
+
+//---combat---//
+
+function startCombat(enemy) {
+    currentEnemy = {...enemy};
+    document.getElementById("combat-menu").style.display = "block";
+    ui.updateUI();
+}
 
 function playerAttack(enemy) {
     const damage = Math.max(0, run.str * 2- enemy.defense);
@@ -58,33 +174,27 @@ function checkGameOver() {
     }
 }
 
+//---rest---//
 
-function startCombat(enemy) {
-    currentEnemy = {...enemy};
-    document.getElementById("combat-menu").style.display = "block";
-    ui.updateUI();
-}
-
-const handlers = {common: handleCommon, uncommon: handleUncommon, rare: handleRare, legendary: handleLegendary};
-
-function explore() {
-    let roll = rollTier(tiers.encounters);
-
-    handlers[roll]();
-}
-
-function investigate() {
-    let roll = rollTier(tiers.investigate);
-    if (roll === "flavor") {
-        console.log("You found nothing.");
-    } else if (roll === "encounter") {
-        console.log("You found a small amount of gold!");
-        run.gold += 10;
-    } else {
-        console.log("You encountered an enemy!");
-        startCombat(getRandomEnemy());
+function restAtCampsite() {
+    let result = rollTier(tiers.rest);
+    let healPercentage = 0;
+    if (result === "poor") {
+        healPercentage = 0.15;
     }
+    else if (result === "good") {
+        healPercentage = 0.45;
+    }
+    else {
+        healPercentage = 0.85;
+    }
+    run.currentHealth += run.currentMaxHealth * healPercentage;
+    if (run.currentHealth > run.currentMaxHealth) run.currentHealth = run.currentMaxHealth;
+    console.log(`You rested and healed ${result} health`);
+    ui.updateUI(); 
 }
+
+//---leveling---//
 
 function expGain(amount) {
     run.currentExp += amount;
@@ -115,6 +225,8 @@ function expToNextLevel() {
     return run.currentLevel * 100;
 }
    
+//---stats---//
+
 function stageStat(stat) {
     if (run.skillPoints > 0) {
         staged[stat]++;
@@ -141,34 +253,4 @@ function confirmStatAllocation() {
         staged[stat] = 0;
     }
     console.log("Stat allocation confirmed.");
-}
-
-function rollTier(tiersObject) {
-    let roll = Math.random();
-    let total = 0;
-
-    for (let tier in tiersObject) {
-        total += tiersObject[tier];
-        if (roll < total) {
-            return tier
-        }
-    }
-}
-
-function restAtCampsite() {
-    let result = rollTier(tiers.rest);
-    let healPercentage = 0;
-    if (result === "poor") {
-        healPercentage = 0.15;
-    }
-    else if (result === "good") {
-        healPercentage = 0.45;
-    }
-    else {
-        healPercentage = 0.85;
-    }
-    run.currentHealth += run.currentMaxHealth * healPercentage;
-    if (run.currentHealth > run.currentMaxHealth) run.currentHealth = run.currentMaxHealth;
-    console.log(`You rested and healed ${result} health`);
-    ui.updateUI(); 
 }

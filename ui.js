@@ -123,8 +123,7 @@ fleeButton.addEventListener("click", function () {
 });
 
 exploreButton.addEventListener("click", function () {
-    // For demonstration, let's say the player encounters a thug when exploring
-    startCombat(getRandomEnemy());
+    explore();
     ui.updateUI();
 });
 
@@ -133,8 +132,12 @@ restButton.addEventListener("click", function () {
 });
 
 investigateButton.addEventListener("click", function () {
-    investigate();
+    if (investigateAvailable) {
+        investigate();
+        investigateAvailable = false;
+        document.getElementById("investigate-button").style.display = "none";
     ui.updateUI();
+    }
 });
 
 strengthButton.addEventListener("click", function () {
