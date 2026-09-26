@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <title>Game</title>
+</head>
+<body>
+    <div id="container">
+        <div id="race-select">
+            <select id="race-dropdown">
+                <option value="">Select a race</option>
+                <option value="human">Human</option>
+                <option value="wolf">Wolf</option>
+                <option value="vampire">Vampire</option>
+            </select>
+            <button id="confirm-race">The end awaits!</button>
+        </div>
+        <div id="start-screen">
+            
+        </div>
+        <div id="game-screen">
+            <div id="location-screen">
+                <button id="explore-button">Explore</button>
+                <button id="rest-button">Rest</button>
+                <button id="shop-button">Shop</button>
+                <button id="inventory-button">Inventory</button>
+                <button id="investigate-button">Investigate</button>
+                <button id="toggle-sidebar">Toggle Sidebar</button>
+            </div>
+            <div id="level-up-screen">
+                <p id="level-up-text"></p>
+                <p id="Str"></p>
+                <button id="str-down">-</button>
+                <button id="str-up">+</button>
+                <p id="Dex"></p>
+                <button id="dex-down">-</button>
+                <button id="dex-up">+</button>
+                <p id="End"></p>
+                <button id="end-down">-</button>
+                <button id="end-up">+</button>
+                <p id="Int"></p>
+                <button id="int-down">-</button>
+                <button id="int-up">+</button>
+                <p id="Cha"></p>
+                <button id="cha-down">-</button>
+                <button id="cha-up">+</button>
+                <p id="Luck"></p>
+                <button id="luck-down">-</button>
+                <button id="luck-up">+</button>
+
+                <button id="confirm-level-up">Confirm</button>
+            </div>
+            <div id="always-visible">
+                <p id="health"></p>
+                <p id="stamina"></p>
+                <p id="gold"></p>
+                <p id="day"></p>
+                <p id="exp"></p>
+                <p id="level"></p>
+            </div>
+            <div id="enemy-info">
+                <p id="enemy-name"></p>
+                <p id="enemy-health"></p>
+            </div>
+            <div id="sidebar-menu">
+                <p id="currentRace"></p>
+                <p id="str"></p>
+                <p id="dex"></p>
+                <p id="end"></p>
+                <p id="int"></p>
+                <p id="cha"></p>
+                <p id="luck"></p>
+                <p id="skills"></p>
+                <p id="inventory"></p>
+                <p id="perks"></p>
+                
+            </div>
+            <div id="combat-menu">
+            <button id="attack-button">Attack</button>
+            <button id="defend-button">Defend</button>
+            <button id="use-item-button">Use Item</button>
+            <button id="flee-button">Flee</button>
+            
+            </div>
+        </div>
+    </div>
+    
+    <script src="races.js"></script>
+    <script src="enemies.js"></script>
+    <script src="tiers.js"></script>
+    <script src="state.js"></script>
+    <script src="mechanics.js"></script>
+    <script src="ui.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+#game-screen {
+    display: none;
+}
+
+#sidebar-menu {
+    display: none;
+}
+#combat-menu {
+    display: none;
+}
+
+#inventory-menu {
+    display: none;
+}
+
+#stats-menu {
+    display: none;
+}
+
+#level-up-screen {
+    display: none;
+}
