@@ -65,21 +65,14 @@ function startCombat(enemy) {
     ui.updateUI();
 }
 
+const handlers = {common: handleCommon, uncommon: handleUncommon, rare: handleRare, legendary: handleLegendary};
+
 function explore() {
     let roll = rollTier(tiers.encounters);
-    if (roll === "common") {
 
-    }
-    else if (roll === "uncommon") {
-
-    }
-    else if (roll === "rare") {
-
-    }
-    else {
-        
-    }
+    handlers[roll]();
 }
+
 function investigate() {
     let roll = rollTier(tiers.investigate);
     if (roll === "flavor") {
