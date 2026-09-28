@@ -28,6 +28,10 @@ let ui = {
         document.getElementById("Int").innerText = `Intelligence: ${run.int + staged.int}`;
         document.getElementById("Cha").innerText = `Charisma: ${run.cha + staged.cha}`;
         document.getElementById("Luck").innerText = `Luck: ${run.luck + staged.luck}`;
+        exploreButton.style.display = investigateAvailable ? "none" : "";
+        restButton.style.display = investigateAvailable ? "none" : "";
+        inventoryButton.style.display = investigateAvailable ? "none" : "";
+        shopButton.style.display = investigateAvailable ? "none" : "";
     },
 };
 let gameScreen = document.getElementById("game-screen");
