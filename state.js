@@ -24,6 +24,8 @@ let defaultRun = {
     gold: 0,
     inventory: [],
     perks: [],
+    hasUsedFirstSave: false,
+    cursed: {str: 0, dex: 0, end: 0, int: 0, cha: 0, luck: 0}
 };
 
 let run = { ...defaultRun };
@@ -58,6 +60,7 @@ function startNewRun(raceName) {
     run.perks = [...race.perks];
     run.skills = [...race.skills];
     run.skillPoints = 0;
+    run.cursed = {str: 0, dex: 0, end: 0, int: 0, cha: 0, luck: 0};
     saveRun();
 }
 

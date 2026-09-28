@@ -122,6 +122,77 @@ function startCombat(enemy) {
 
 let enemyScaling = {health: 0.15, attack: 0.07, defense: 0.02};
 
+function dangerLevel(enemy) {
+    let attackValues = enemyPool.map(item => item.attack);
+    let lowestAttack = Math.min(...attackValues);
+    let highestAttack = Math.max(...attackValues);
+    let levelScale = run.currentLevel - 1;
+    
+    let floor = Math.round(lowestAttack * (1 + levelScale * enemyScaling.attack) * 0.75);
+    let ceiling = Math.round(highestAttack * (1 + levelScale * enemyScaling.attack) * 1.2);
+    let normalized = (enemy.attack - floor) / (ceiling - floor);
+    let high = Math.min(normalized, 1);
+    let final = Math.max(high, 0);
+    return final;
+}
+
+function getSaveChance(chance) {
+    let minSave = 0.05;
+    let maxSave = 0.20;
+
+    let saveChance = (minSave + chance * (maxSave - minSave));
+    return saveChance;
+}
+
+function getCurseAmount(dangerNormalized) {
+    let minCurse = 1;
+    let maxCurse = 3;
+    let curseAmount = Math.round(maxCurse - dangerNormalized * (maxCurse - minCurse));
+    return curseAmount;
+}
+
+let stats = ["str", "dex", "end", "int", "cha", "luck"];
+
+function applyCurse(enemy) {
+    let curseAmount = getCurseAmount(dangerLevel(enemy));
+    let curse = Math.floor(Math.random() * stats.length);
+    let chosenStat = stats[curse];
+    let currentValue = run[chosenStat];
+
+    let loopCount = 0;
+    
+    while (currentValue - curseAmount < 5 && loopCount < 10) {
+        curse = Math.floor(Math.random() * stats.length);
+        chosenStat = stats[curse];
+        currentValue = run[chosenStat];
+        loopCount++;
+    }
+    
+    if ( currentValue - curseAmount >= 5) {
+            run[chosenStat] -= curseAmount;
+            run.cursed[chosenStat] += curseAmount;
+        }
+}
+
+function attemptSave(enemy) {
+    if (!run.hasUsedFirstSave) {
+        run.hasUsedFirstSave = true;
+        run.currentHealth = 1;
+        alert("Fate smiled upon you, and the enemey left you clinging to life. Probably shouldn't test the fates again!");
+        return true;
+    }
+    let save = getSaveChance(dangerLevel(enemy));
+    let roll = Math.random();
+
+    if (roll < save)  {
+        run.currentHealth = 1;
+        applyCurse(enemy);
+        alert("You somehow managed to survive again, but this time you feel weakened from the encounter.")
+        return true;
+    }
+    return false;
+}
+
 function getScaledEnemy(enemy) {
     let scaledEnemy = {...enemy};
     let rolledTier = rollTier(tiers.enemyStrength);
@@ -177,6 +248,11 @@ function fleeCombat() {
 
 function checkGameOver() {
     if (run.currentHealth <= 0) {
+        if (attemptSave(currentEnemy)) {
+            currentEnemy = null;
+            document.getElementById("combat-menu").style.display = "none";
+            return;
+        }
         console.log("Game Over! You have been defeated.");
         document.getElementById("combat-menu").style.display = "none";
         currentEnemy = null;
