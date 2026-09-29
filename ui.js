@@ -11,14 +11,14 @@ let ui = {
         document.getElementById("int").innerText = `Intelligence: ${run.int} ${run.cursed.int > 0 ? `(-${run.cursed.int})` : ""}`;
         document.getElementById("cha").innerText = `Charisma: ${run.cha} ${run.cursed.cha > 0 ? `(-${run.cursed.cha})` : ""}`;
         document.getElementById("luck").innerText = `Luck: ${run.luck} ${run.cursed.luck > 0 ? `(-${run.cursed.luck})` : ""}`;
-        document.getElementById("inventory").innerText = `Inventory: ${run.inventory.join(", ")}`;
         document.getElementById("perks").innerText = `Perks: ${run.perks.join(", ")}`;
         document.getElementById("skills").innerText = `Skills: ${run.skills.join(", ")}`;
         document.getElementById("currentRace").innerText = `Current Race: ${run.currentRace}`;
         document.getElementById("enemy-name").innerText = currentEnemy ? `Enemy: ${currentEnemy.name}` : "No enemy";
         document.getElementById("enemy-health").innerText = currentEnemy ? `Enemy Health: ${currentEnemy.health}` : "";
         document.getElementById("combat-menu").style.display = currentEnemy ? "block" : "none";
-        document.getElementById("location-screen").style.display = currentEnemy ? "none" : "block";
+        document.getElementById("location-screen").style.display = (currentEnemy || inventoryOpen) ? "none" : "block";
+        document.getElementById("inventory-screen").style.display = inventoryOpen ? "block" : "none";
         document.getElementById("exp").innerText = `EXP: ${run.currentExp}`;
         document.getElementById("level").innerText = `Level: ${run.currentLevel}`;
         document.getElementById("exp").textContent = `EXP: ${run.currentExp} / ${expToNextLevel()}`;
@@ -32,6 +32,12 @@ let ui = {
         restButton.style.display = investigateAvailable ? "none" : "";
         inventoryButton.style.display = investigateAvailable ? "none" : "";
         shopButton.style.display = investigateAvailable ? "none" : "";
+        inventoryItem.innerHTML = "";
+        run.inventory.forEach(item => {
+            let result = document.createElement("div");
+            result.innerText = item;
+            inventoryItem.appendChild(result);
+        });
     },
 };
 let gameScreen = document.getElementById("game-screen");
@@ -61,6 +67,8 @@ let returnChaButton = document.getElementById("cha-down");
 let luckButton = document.getElementById("luck-up");
 let returnLuckButton = document.getElementById("luck-down");
 let confirmLevelUpButton = document.getElementById("confirm-level-up");
+let exitButton = document.getElementById("exit-button");
+let inventoryItem = document.getElementById("inventory-item");
 
 startButton.addEventListener("click", function () {
     let selectedRace = raceSelect.value;
@@ -74,7 +82,15 @@ startButton.addEventListener("click", function () {
     ui.updateUI();
 });
 
+inventoryButton.addEventListener("click", function () {
+    inventoryOpen = true;
+    ui.updateUI();
+});
 
+exitButton.addEventListener("click", function () {
+    inventoryOpen = false;
+    ui.updateUI();
+});
 
 sidebarButton.addEventListener("click", function () {
     let sidebar = document.getElementById("sidebar-menu");
