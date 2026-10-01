@@ -28,3 +28,7 @@
 #inventory-screen {
     display: none;
 }
+
+.selected {
+    background-color: yellow;
+}

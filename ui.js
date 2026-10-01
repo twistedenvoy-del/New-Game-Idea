@@ -69,6 +69,7 @@ let returnLuckButton = document.getElementById("luck-down");
 let confirmLevelUpButton = document.getElementById("confirm-level-up");
 let exitButton = document.getElementById("exit-button");
 let inventoryItem = document.getElementById("inventory-item");
+let useInventory = document.getElementById("use-inventory-button");
 
 startButton.addEventListener("click", function () {
     let selectedRace = raceSelect.value;
@@ -92,6 +93,13 @@ exitButton.addEventListener("click", function () {
     ui.updateUI();
 });
 
+inventoryItem.addEventListener("click", function(event) {
+    chosenItem = event.target.innerText;
+    if (selectedElement) {selectedElement.classList.remove("selected")}
+    event.target.classList.add("selected");
+    selectedElement = event.target;
+});
+
 sidebarButton.addEventListener("click", function () {
     let sidebar = document.getElementById("sidebar-menu");
     if (sidebar.style.display === "none" || sidebar.style.display === "") {
@@ -106,9 +114,10 @@ attackButton.addEventListener("click", function () {
         playerAttack(currentEnemy);
         if (currentEnemy.health <= 0) {
             alert(`You defeated the ${currentEnemy.name}!`);
+            expGain(Math.floor(expGainAmount + (currentEnemy.maxHealth * 0.2)));
             currentEnemy = null;
             document.getElementById("combat-menu").style.display = "none";
-            expGain(expGainAmount * 3);
+            
         } else {
             enemyAttack(currentEnemy);
             checkGameOver();
@@ -128,8 +137,13 @@ defendButton.addEventListener("click", function () {
 });
 
 useItemButton.addEventListener("click", function () {
-    // Implement use item logic here
+    useSelectedItem();
     alert("You used an item!");
+    ui.updateUI();
+});
+
+useInventory.addEventListener("click", function() {
+    useSelectedItem();
     ui.updateUI();
 });
 

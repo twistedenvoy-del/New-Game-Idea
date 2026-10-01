@@ -4,6 +4,8 @@ let expGainAmount = 5;
 let staged = { str: 0, dex: 0, end: 0, int: 0, cha: 0, luck: 0 };
 let investigateAvailable = false;
 let inventoryOpen = false;
+let chosenItem = null;
+let selectedElement = null;
 
 //---utilities---//
 
@@ -26,6 +28,26 @@ function getRandomAmount(min, max) {
     return amount;
 }
 
+//---items---//
+
+let itemEffects = {
+    "Black Box Cure": function () {
+        stats.forEach(item => {
+    run[item] += run.cursed[item];
+    run.cursed[item] = 0;
+});
+    }
+};
+
+function useSelectedItem() {
+    let effect = itemEffects[chosenItem];
+
+    if (effect) {
+        effect();
+        run.inventory.splice(run.inventory.indexOf(chosenItem), 1);
+    }
+}
+
 //---Exploration and encounters---//
 
 const handlers = {
@@ -44,7 +66,7 @@ function loot(goldMin, goldMax, expMin, expMax) {
         alert(`You received ${goldAmount} gold`);
     }
     else {
-        let expAmount = getRandomAmount(expMax, expMax);
+        let expAmount = getRandomAmount(expMin, expMax);
         expGain(expAmount);
         alert(`You received ${expAmount} exp`);
     }
@@ -97,7 +119,6 @@ function handleRare() {
 
 function handleLegendary() {
     loot(70, 90, 130, 150);
-    console.log(outcome);
 }
 
 function investigate() {
@@ -199,9 +220,10 @@ function getScaledEnemy(enemy) {
     let rolledTier = rollTier(tiers.enemyStrength);
     let multiplier = tiers.enemyStrengthMultiplier[rolledTier];
     let levelScale = run.currentLevel - 1;
-    scaledEnemy.health = scaledEnemy.health * (1 + levelScale * enemyScaling.health) * multiplier;
-    scaledEnemy.attack = scaledEnemy.attack * (1 + levelScale * enemyScaling.attack) * multiplier;
-    scaledEnemy.defense = scaledEnemy.defense * (1 + levelScale * enemyScaling.defense) * multiplier;
+    scaledEnemy.health = Math.round(scaledEnemy.health * (1 + levelScale * enemyScaling.health) * multiplier);
+    scaledEnemy.maxHealth = scaledEnemy.health;
+    scaledEnemy.attack = Math.round(scaledEnemy.attack * (1 + levelScale * enemyScaling.attack) * multiplier);
+    scaledEnemy.defense = Math.round(scaledEnemy.defense * (1 + levelScale * enemyScaling.defense) * multiplier);
     return scaledEnemy;
 }
 
@@ -216,12 +238,11 @@ function enemyAttack(enemy) {
     let roll = Math.random();
     if (roll < 0.15) {
         console.log(`The ${enemy.name} missed their attack!`);
-        run.currentHealth -= 0;
         return;
     }
     const damage = Math.max(0, enemy.attack - run.end);
     if (isDefending) {
-        const reducedDamage = Math.floor(enemy.attack - run.end) / 2;
+        const reducedDamage = Math.floor(Math.max(0, enemy.attack - run.end) / 2);
         run.currentHealth -= reducedDamage;
         console.log(`You defended against the ${enemy.name}'s attack! You took ${reducedDamage} damage.`);
     } else {
@@ -230,7 +251,6 @@ function enemyAttack(enemy) {
     }
 
     if (run.currentHealth < 0) run.currentHealth = 0;
-    console.log(`The ${enemy.name} attacked you for ${damage} damage!`);
 }
 
 function fleeCombat() {
