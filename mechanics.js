@@ -28,26 +28,6 @@ function getRandomAmount(min, max) {
     return amount;
 }
 
-//---items---//
-
-let itemEffects = {
-    "Black Box Cure": function () {
-        stats.forEach(item => {
-    run[item] += run.cursed[item];
-    run.cursed[item] = 0;
-});
-    }
-};
-
-function useSelectedItem() {
-    let effect = itemEffects[chosenItem];
-
-    if (effect) {
-        effect();
-        run.inventory.splice(run.inventory.indexOf(chosenItem), 1);
-    }
-}
-
 //---Exploration and encounters---//
 
 const handlers = {
@@ -121,17 +101,23 @@ function handleLegendary() {
     loot(70, 90, 130, 150);
 }
 
+const lootHandlers = {
+    gold:() => {let gold = getRandomAmount(5,16); run.gold += gold;},
+    exp: () => {let random = getRandomAmount(5, 21); expGain(random);},
+    loot: () => {let item = Math.floor(Math.random() * itemList.length);
+    run.inventory.push(itemList[item]);
+    }
+}
+
+const investigateHandlers = {
+    flavor: () => {alert("You found Nothing.")},
+    danger: () => {startCombat(getScaledEnemy(getRandomEnemy()));},
+    loot: () => {let result =rollTier(tiers.lootOutcomes); lootHandlers[result]();}
+}
+
 function investigate() {
     let roll = rollTier(tiers.investigate);
-    if (roll === "flavor") {
-        console.log("You found nothing.");
-    } else if (roll === "encounter") {
-        console.log("You found a small amount of gold!");
-        run.gold += 10;
-    } else {
-        console.log("You encountered an enemy!");
-        startCombat(getScaledEnemy(getRandomEnemy()));
-    }
+    investigateHandlers[roll]();
 }
 
 //---combat---//
@@ -199,7 +185,7 @@ function applyCurse(enemy) {
 function attemptSave(enemy) {
     if (!run.hasUsedFirstSave) {
         run.hasUsedFirstSave = true;
-        run.currentHealth = 1;
+        run.currentHealth = Math.floor(getRandomAmount(50, 76) / 100 * run.currentMaxHealth);
         alert("Fate smiled upon you, and the enemey left you clinging to life. Probably shouldn't test the fates again!");
         return true;
     }

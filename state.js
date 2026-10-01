@@ -24,6 +24,7 @@ let defaultRun = {
     gold: 0,
     inventory: [],
     perks: [],
+    abilities: [],
     hasUsedFirstSave: false,
     cursed: {str: 0, dex: 0, end: 0, int: 0, cha: 0, luck: 0}
 };

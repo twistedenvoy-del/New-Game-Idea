@@ -68,7 +68,7 @@ let luckButton = document.getElementById("luck-up");
 let returnLuckButton = document.getElementById("luck-down");
 let confirmLevelUpButton = document.getElementById("confirm-level-up");
 let exitButton = document.getElementById("exit-button");
-let inventoryItem = document.getElementById("inventory-item");
+let inventoryItem = document.getElementById("inventory-items");
 let useInventory = document.getElementById("use-inventory-button");
 
 startButton.addEventListener("click", function () {
