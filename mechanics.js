@@ -7,6 +7,7 @@ let inventoryOpen = false;
 let chosenItem = null;
 let selectedElement = null;
 let combatMessages = [];
+let chargedAttack = null;
 
 //---utilities---//
 
@@ -140,6 +141,7 @@ function startCombat(enemy) {
     document.getElementById("combat-menu").style.display = "block";
     combatLog.innerHTML = "";
     combatMessages = [];
+    chargedAttack = null;
     ui.updateUI();
 }
 
@@ -248,18 +250,39 @@ function enemyAttack(enemy) {
     let maxChance = Math.min(minChance + 0.05, 0.40);
     let randomChance = Math.random() * (maxChance - minChance) + minChance;
     let roll = Math.random();
+    
+    let chosenAttack;
+    if (chargedAttack) {
+        chosenAttack = chargedAttack;
+        chargedAttack = null;
+    }
+     else {
+        const randomIndex = Math.floor(Math.random() * enemy.attacks.length);
+        chosenAttack = enemy.attacks[randomIndex];
+        if (chosenAttack.charged) {
+            chargedAttack = chosenAttack;
+            addMessage(`The ${enemy.name} is charging up ${chosenAttack.name}!`);
+            return;
+        }
+     }
+    let attackValue = Math.floor(enemy.attack * chosenAttack.power);
+    let minAttack = attackValue * 0.15;
+    let endDamage = Math.min(run.end * 0.02, 0.50);
+    
+    
+
     if (roll < randomChance) {
         addMessage(`The ${enemy.name} missed their attack!`);
         return;
     }
-    const damage = Math.max(0, enemy.attack - run.end);
+    const damage = Math.floor(Math.max(minAttack, attackValue - (attackValue * endDamage)));
     if (isDefending) {
-        const reducedDamage = Math.floor(Math.max(0, enemy.attack - run.end) / 2);
+        const reducedDamage = Math.floor(Math.max(0, damage) / 2);
         run.currentHealth -= reducedDamage;
-       addMessage(`You defended against the ${enemy.name}'s attack! You took ${reducedDamage} damage.`);
+       addMessage(`You defended against the ${enemy.name}'s ${chosenAttack.name}! You took ${reducedDamage} damage.`);
     } else {
         run.currentHealth -= damage;
-        addMessage(`The ${enemy.name} attacked you for ${damage} damage!`);
+        addMessage(`The ${enemy.name} attacked with ${chosenAttack.name} for ${damage} damage!`);
     }
 
     if (run.currentHealth < 0) run.currentHealth = 0;
@@ -283,12 +306,16 @@ function checkGameOver() {
     if (run.currentHealth <= 0) {
         if (attemptSave(currentEnemy)) {
             currentEnemy = null;
+            combatMessages = [];
+            combatLog.textContent = "";
             document.getElementById("combat-menu").style.display = "none";
             return;
         }
-        addMessage("Game Over! You have been defeated.s");
+        addMessage("Game Over! You have been defeated.");
         document.getElementById("combat-menu").style.display = "none";
         currentEnemy = null;
+        combatMessages = [];
+        combatLog.textContent = "";
         gameScreen.style.display = "none";
         raceSelectDiv.style.display = "block";
         raceSelect.value = "";
