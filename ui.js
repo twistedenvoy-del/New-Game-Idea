@@ -17,7 +17,7 @@ let ui = {
         document.getElementById("enemy-name").innerText = currentEnemy ? `Enemy: ${currentEnemy.name}` : "No enemy";
         document.getElementById("enemy-health").innerText = currentEnemy ? `Enemy Health: ${currentEnemy.health}` : "";
         document.getElementById("combat-menu").style.display = currentEnemy ? "block" : "none";
-        document.getElementById("location-screen").style.display = (currentEnemy || inventoryOpen) ? "none" : "block";
+        document.getElementById("location-screen").style.display = (currentEnemy || inventoryOpen || document.getElementById("level-up-screen").style.display === "block") ? "none" : "block";
         document.getElementById("inventory-screen").style.display = inventoryOpen ? "block" : "none";
         document.getElementById("exp").innerText = `EXP: ${run.currentExp}`;
         document.getElementById("level").innerText = `Level: ${run.currentLevel}`;
@@ -70,6 +70,7 @@ let confirmLevelUpButton = document.getElementById("confirm-level-up");
 let exitButton = document.getElementById("exit-button");
 let inventoryItem = document.getElementById("inventory-items");
 let useInventory = document.getElementById("use-inventory-button");
+let combatLog = document.getElementById("combat-log");
 
 startButton.addEventListener("click", function () {
     let selectedRace = raceSelect.value;
@@ -113,10 +114,10 @@ attackButton.addEventListener("click", function () {
     if (currentEnemy) {
         playerAttack(currentEnemy);
         if (currentEnemy.health <= 0) {
-            alert(`You defeated the ${currentEnemy.name}!`);
-            expGain(Math.floor(expGainAmount + (currentEnemy.maxHealth * 0.2)));
+            let reward = (Math.floor(expGainAmount + (currentEnemy.maxHealth * 0.2)));
             currentEnemy = null;
-            document.getElementById("combat-menu").style.display = "none";
+            expGain(reward);
+             document.getElementById("combat-menu").style.display = "none";
             
         } else {
             enemyAttack(currentEnemy);

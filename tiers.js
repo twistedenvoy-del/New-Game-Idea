@@ -4,7 +4,5 @@ let tiers = {
     commonOutcomes: {rest: 0.25, combat: 0.25, investigate: 0.25, flavor: 0.25},
     eventOutcomes: {flavor: 0.25, combat: 0.25, investigate: 0.25, loot: 0.25},
     lootOutcomes: {gold: 0.40, exp: 0.35, loot: 0.25},
-    investigate: { flavor: 0.40, loot: 0.20, danger: 0.40},
-    enemyStrength: {weak: 0.20, normal: 0.60, strong: 0.20},
-    enemyStrengthMultiplier: {weak: 0.75, normal: 1, strong: 1.2}
+    investigate: { flavor: 0.40, loot: 0.20, danger: 0.40}
 };

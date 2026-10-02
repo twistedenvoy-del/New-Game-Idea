@@ -6,6 +6,7 @@ let investigateAvailable = false;
 let inventoryOpen = false;
 let chosenItem = null;
 let selectedElement = null;
+let combatMessages = [];
 
 //---utilities---//
 
@@ -28,6 +29,17 @@ function getRandomAmount(min, max) {
     return amount;
 }
 
+function addMessage(message) {
+    if (!currentEnemy) {
+        combatMessages = [];
+    }
+    combatMessages.push(message);
+    if (combatMessages.length > 4) {
+        combatMessages.shift();
+    }
+    combatLog.innerHTML = combatMessages.join("<br>");
+}
+
 //---Exploration and encounters---//
 
 const handlers = {
@@ -43,12 +55,12 @@ function loot(goldMin, goldMax, expMin, expMax) {
     if (result) {
         let goldAmount = getRandomAmount(goldMin, goldMax);
         run.gold += goldAmount;
-        alert(`You received ${goldAmount} gold`);
+        addMessage(`You received ${goldAmount} gold`);
     }
     else {
         let expAmount = getRandomAmount(expMin, expMax);
         expGain(expAmount);
-        alert(`You received ${expAmount} exp`);
+        addMessage(`You received ${expAmount} exp`);
     }
 }
 
@@ -62,7 +74,7 @@ const commonHandlers = {
     rest: restAtCampsite,
     combat: function() { startCombat(getScaledEnemy(getRandomEnemy())); },
     investigate: function() { investigateAvailable = true; document.getElementById("investigate-button").style.display = "block"; },
-    flavor: function() { console.log("You found nothing of interest."); },
+    flavor: function() { addMessage("You found nothing of interest."); },
 };
 
 function handleCommon () {
@@ -74,7 +86,7 @@ function handleCommon () {
 const uncommonHandlers = {
     combat: function() { startCombat(getScaledEnemy(getRandomEnemy())); },
     investigate: function() { investigateAvailable = true; document.getElementById("investigate-button").style.display = "block"; },
-    flavor: function() { console.log("You found nothing of interest."); },
+    flavor: function() { addMessage("You found nothing of interest."); },
     loot: function() { loot(5, 15, 10, 20); }
 };
 
@@ -87,7 +99,7 @@ function handleUncommon() {
 const rareHandlers = {
     combat: function() { startCombat(getScaledEnemy(getRandomEnemy())); },
     investigate: function() { investigateAvailable = true; document.getElementById("investigate-button").style.display = "block"; },
-    flavor: function() { console.log("You found nothing of interest."); },
+    flavor: function() { addMessage("You found nothing of interest."); },
     loot: function() { loot(25, 35, 30, 40); }
 };
 
@@ -110,7 +122,7 @@ const lootHandlers = {
 }
 
 const investigateHandlers = {
-    flavor: () => {alert("You found Nothing.")},
+    flavor: () => {addMessage("You found Nothing.")},
     danger: () => {startCombat(getScaledEnemy(getRandomEnemy()));},
     loot: () => {let result =rollTier(tiers.lootOutcomes); lootHandlers[result]();}
 }
@@ -118,6 +130,7 @@ const investigateHandlers = {
 function investigate() {
     let roll = rollTier(tiers.investigate);
     investigateHandlers[roll]();
+    addMessage(`You noticed something interesting and decided to investigate.`);
 }
 
 //---combat---//
@@ -125,6 +138,8 @@ function investigate() {
 function startCombat(enemy) {
     currentEnemy = {...enemy};
     document.getElementById("combat-menu").style.display = "block";
+    combatLog.innerHTML = "";
+    combatMessages = [];
     ui.updateUI();
 }
 
@@ -201,39 +216,50 @@ function attemptSave(enemy) {
     return false;
 }
 
+function getRandomStat(base, low, high) {
+    let roll = getRandomAmount(low, high + 1);
+    let multiplier = roll / 100;
+    let stat = Math.floor(base * multiplier);
+    return stat;
+}
+
 function getScaledEnemy(enemy) {
     let scaledEnemy = {...enemy};
-    let rolledTier = rollTier(tiers.enemyStrength);
-    let multiplier = tiers.enemyStrengthMultiplier[rolledTier];
     let levelScale = run.currentLevel - 1;
-    scaledEnemy.health = Math.round(scaledEnemy.health * (1 + levelScale * enemyScaling.health) * multiplier);
+    scaledEnemy.health = getRandomStat(scaledEnemy.health * (1 + levelScale * enemyScaling.health), 90, 110);
     scaledEnemy.maxHealth = scaledEnemy.health;
-    scaledEnemy.attack = Math.round(scaledEnemy.attack * (1 + levelScale * enemyScaling.attack) * multiplier);
-    scaledEnemy.defense = Math.round(scaledEnemy.defense * (1 + levelScale * enemyScaling.defense) * multiplier);
+    scaledEnemy.attack = getRandomStat(scaledEnemy.attack * (1 + levelScale * enemyScaling.attack), 80, 120);
+    scaledEnemy.defense = getRandomStat(scaledEnemy.defense * (1 + levelScale * enemyScaling.defense), 80, 120);
+    scaledEnemy.speed = getRandomStat(scaledEnemy.speed, 80, 120);
+    console.log(scaledEnemy);
     return scaledEnemy;
 }
 
 function playerAttack(enemy) {
-    const damage = Math.max(0, run.str * 2- enemy.defense);
+    let weaponBonus = run.currentRace === "human" ? 10 : 0;
+    const damage = Math.max(0, run.str * 2 + weaponBonus - enemy.defense);
     enemy.health -= damage;
     if (enemy.health < 0) enemy.health = 0;
-    console.log(`You attacked the ${enemy.name} for ${damage} damage!`);
+    addMessage(`You attacked the ${enemy.name} for ${damage} damage!`);
 }
 
 function enemyAttack(enemy) {
+    let minChance = run.dex / 100;
+    let maxChance = Math.min(minChance + 0.05, 0.40);
+    let randomChance = Math.random() * (maxChance - minChance) + minChance;
     let roll = Math.random();
-    if (roll < 0.15) {
-        console.log(`The ${enemy.name} missed their attack!`);
+    if (roll < randomChance) {
+        addMessage(`The ${enemy.name} missed their attack!`);
         return;
     }
     const damage = Math.max(0, enemy.attack - run.end);
     if (isDefending) {
         const reducedDamage = Math.floor(Math.max(0, enemy.attack - run.end) / 2);
         run.currentHealth -= reducedDamage;
-        console.log(`You defended against the ${enemy.name}'s attack! You took ${reducedDamage} damage.`);
+       addMessage(`You defended against the ${enemy.name}'s attack! You took ${reducedDamage} damage.`);
     } else {
         run.currentHealth -= damage;
-        console.log(`The ${enemy.name} attacked you for ${damage} damage!`);
+        addMessage(`The ${enemy.name} attacked you for ${damage} damage!`);
     }
 
     if (run.currentHealth < 0) run.currentHealth = 0;
@@ -242,12 +268,12 @@ function enemyAttack(enemy) {
 function fleeCombat() {
     let roll = Math.random();
     if (roll < run.dex / (run.dex + currentEnemy.speed)) {
-        console.log("You successfully fled the combat!");
         currentEnemy = null;
+        addMessage("You successfully fled the combat!");
         document.getElementById("combat-menu").style.display = "none";
         document.getElementById("location-screen").style.display = "block";
     } else {
-        console.log("You failed to flee! The enemy attacks you.");
+        addMessage("You failed to flee! The enemy attacks you.");
         enemyAttack(currentEnemy);
         checkGameOver();
     }
@@ -260,7 +286,7 @@ function checkGameOver() {
             document.getElementById("combat-menu").style.display = "none";
             return;
         }
-        console.log("Game Over! You have been defeated.");
+        addMessage("Game Over! You have been defeated.s");
         document.getElementById("combat-menu").style.display = "none";
         currentEnemy = null;
         gameScreen.style.display = "none";
@@ -284,17 +310,19 @@ function restAtCampsite() {
     else {
         healPercentage = 0.85;
     }
-    run.currentHealth += run.currentMaxHealth * healPercentage;
+    run.currentHealth += Math.round(run.currentMaxHealth * healPercentage);
     if (run.currentHealth > run.currentMaxHealth) run.currentHealth = run.currentMaxHealth;
-    console.log(`You rested and healed ${result} health`);
+    addMessage(`You rested and healed ${result} health`);
     ui.updateUI(); 
 }
 
 //---leveling---//
 
 function expGain(amount) {
+    let intBonus = Math.max(0, run.int - 10) * 0.01;
+    amount += Math.floor(amount * intBonus);
     run.currentExp += amount;
-    console.log(`You gained ${amount} XP!`);
+    addMessage(`You gained ${amount} XP!`);
     checkLevelUp();
 }
 
@@ -309,8 +337,17 @@ function checkLevelUp() {
         document.getElementById("level-up-screen").style.display = "block";
         run.currentLevel++;
         run.currentExp -= threshold;
+        run.currentMaxHealth += 20;
+        run.currentMaxStamina += 5;
         run.currentHealth = run.currentMaxHealth;
         run.currentStamina = run.currentMaxStamina;
+        
+        let chance = Math.random();
+        let additionalPoint = Math.min(0.25, Math.max(0, run.luck - 10) * 0.01);
+        
+        if (chance < additionalPoint) {
+            run.skillPoints += 1;
+        }
         run.skillPoints ++;
     }
     document.getElementById("level-up-text").innerText = `Congratulations! You've reached level ${run.currentLevel}! You have ${run.skillPoints} skill points to allocate.`;
@@ -327,9 +364,9 @@ function stageStat(stat) {
     if (run.skillPoints > 0) {
         staged[stat]++;
         run.skillPoints--;
-        console.log(`Staged 1 point to ${stat}.`);
+        addMessage(`Staged 1 point to ${stat}.`);
     } else {
-        console.log("No skill points available to stage.");
+        addMessage("No skill points available to stage.");
     }
 }
 
@@ -337,9 +374,9 @@ function unstageStat(stat) {
     if (staged[stat] > 0) {
         staged[stat]--;
         run.skillPoints++;
-        console.log(`Unstaged 1 point from ${stat}.`);
+        addMessage(`Unstaged 1 point from ${stat}.`);
     } else {
-        console.log("No staged points to remove from this stat.");
+        addMessage("No staged points to remove from this stat.");
     }
 }
 
@@ -348,5 +385,5 @@ function confirmStatAllocation() {
         run[stat] += staged[stat];
         staged[stat] = 0;
     }
-    console.log("Stat allocation confirmed.");
+    addMessage("Stat allocation confirmed.");
 }

@@ -32,3 +32,8 @@
 .selected {
     background-color: yellow;
 }
+
+#combat-log {
+    height: 100px;
+    overflow-y: auto;
+}
