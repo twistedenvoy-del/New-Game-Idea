@@ -237,6 +237,33 @@ function getScaledEnemy(enemy) {
     return scaledEnemy;
 }
 
+function didEnemeyMiss() {
+    let minChance = run.dex / 100;
+    let maxChance = Math.min(minChance + 0.05, 0.40);
+    let randomChance = Math.random() * (maxChance - minChance) + minChance;
+    let roll = Math.random();
+    return roll < randomChance;
+}
+
+function calculateDamage(attackValue) {
+    let minAttack = attackValue * 0.15;
+    let endDamage = Math.min(run.end * 0.02, 0.50);
+    return Math.floor(Math.max(minAttack, attackValue - (attackValue * endDamage)));
+}
+
+function applyEnemyDamage(enemy, damage, chosenAttack) {
+    if (isDefending) {
+        const reducedDamage = Math.floor(Math.max(0, damage) / 2);
+        run.currentHealth -= reducedDamage;
+       addMessage(`You defended against the ${enemy.name}'s ${chosenAttack.name}! You took ${reducedDamage} damage.`);
+    } else {
+        run.currentHealth -= damage;
+        addMessage(`The ${enemy.name} attacked with ${chosenAttack.name} for ${damage} damage!`);
+    }
+
+    if (run.currentHealth < 0) run.currentHealth = 0;
+}
+
 function playerAttack(enemy) {
     let weaponBonus = run.currentRace === "human" ? 10 : 0;
     const damage = Math.max(0, run.str * 2 + weaponBonus - enemy.defense);
@@ -246,11 +273,6 @@ function playerAttack(enemy) {
 }
 
 function enemyAttack(enemy) {
-    let minChance = run.dex / 100;
-    let maxChance = Math.min(minChance + 0.05, 0.40);
-    let randomChance = Math.random() * (maxChance - minChance) + minChance;
-    let roll = Math.random();
-    
     let chosenAttack;
     if (chargedAttack) {
         chosenAttack = chargedAttack;
@@ -266,26 +288,14 @@ function enemyAttack(enemy) {
         }
      }
     let attackValue = Math.floor(enemy.attack * chosenAttack.power);
-    let minAttack = attackValue * 0.15;
-    let endDamage = Math.min(run.end * 0.02, 0.50);
     
-    
-
-    if (roll < randomChance) {
+    if (didEnemeyMiss()) {
         addMessage(`The ${enemy.name} missed their attack!`);
         return;
     }
-    const damage = Math.floor(Math.max(minAttack, attackValue - (attackValue * endDamage)));
-    if (isDefending) {
-        const reducedDamage = Math.floor(Math.max(0, damage) / 2);
-        run.currentHealth -= reducedDamage;
-       addMessage(`You defended against the ${enemy.name}'s ${chosenAttack.name}! You took ${reducedDamage} damage.`);
-    } else {
-        run.currentHealth -= damage;
-        addMessage(`The ${enemy.name} attacked with ${chosenAttack.name} for ${damage} damage!`);
-    }
 
-    if (run.currentHealth < 0) run.currentHealth = 0;
+    const damage = calculateDamage(attackValue);
+    applyEnemyDamage(enemy, damage, chosenAttack);
 }
 
 function fleeCombat() {
