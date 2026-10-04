@@ -1,6 +1,6 @@
 let human = {
     name: "human",
-    healthMod: -10,
+    healthMod: 10,
     staminaMod: 0,
     strMod: -2,
     dexMod: 1,
@@ -32,7 +32,7 @@ let wolf = {
 
 let vampire = {
     name: "vampire",
-    healthMod: -10,
+    healthMod: 40,
     staminaMod: 30,
     strMod: 2,
     dexMod: 3,

@@ -266,7 +266,9 @@ function applyEnemyDamage(enemy, damage, chosenAttack) {
 
 function playerAttack(enemy) {
     let weaponBonus = run.currentRace === "human" ? 10 : 0;
-    const damage = Math.max(0, run.str * 2 + weaponBonus - enemy.defense);
+    const rawDamage = run.str * 3 + weaponBonus + (run.currentLevel - 1) * 2;
+    const damageReduction = Math.min(enemy.defense * 0.1, 0.5);
+    const damage = Math.floor(rawDamage *(1 - damageReduction));
     enemy.health -= damage;
     if (enemy.health < 0) enemy.health = 0;
     addMessage(`You attacked the ${enemy.name} for ${damage} damage!`);

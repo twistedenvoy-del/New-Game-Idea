@@ -2,7 +2,7 @@ let thug = {
     name: "Thug",
     health: 100,
     attacks: [{name: "Stab", power: 0.7}, {name: "Slash", power: 1}],
-    attack: 20,
+    attack: 18,
     defense: 10,
     speed: 11
 }
@@ -11,7 +11,7 @@ let mutatedDog = {
     name: "Mutated Dog",
     health: 125,
     attacks: [{name: "Bite", power: 0.8}, {name: "Claw", power: 1}, {name: "Flurry Swipe", power: 2, charged: true}],
-    attack: 25,
+    attack: 22,
     defense: 5,
     speed: 15,
 }
