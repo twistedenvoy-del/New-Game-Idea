@@ -41,6 +41,20 @@ function addMessage(message) {
     combatLog.innerHTML = combatMessages.join("<br>");
 }
 
+function applyPerk(perk) {
+    run[perk.stat] += perk.amount;
+}
+
+
+function generatePerk(perkKey) {
+    let randomIndex = Math.floor(Math.random() * perkKey.length);
+    let perk = perkKey[randomIndex];
+
+    let selectedPerk = perks[perk];
+    perkKey.splice(randomIndex, 1);
+    return perk;
+}
+
 //---Exploration and encounters---//
 
 const handlers = {
@@ -75,7 +89,7 @@ const commonHandlers = {
     rest: restAtCampsite,
     combat: function() { startCombat(getScaledEnemy(getRandomEnemy())); },
     investigate: function() { investigateAvailable = true; document.getElementById("investigate-button").style.display = "block"; },
-    flavor: function() { addMessage("You found nothing of interest."); },
+    flavor: function() { addMessage(randomFlavorText(exploreFlavors.foundItem) + " " + randomFlavorText(exploreFlavors.discovered))},
 };
 
 function handleCommon () {
@@ -87,7 +101,7 @@ function handleCommon () {
 const uncommonHandlers = {
     combat: function() { startCombat(getScaledEnemy(getRandomEnemy())); },
     investigate: function() { investigateAvailable = true; document.getElementById("investigate-button").style.display = "block"; },
-    flavor: function() { addMessage("You found nothing of interest."); },
+    flavor: function() { { addMessage(randomFlavorText(exploreFlavors.foundItem) + " " + randomFlavorText(exploreFlavors.discovered))}; },
     loot: function() { loot(5, 15, 10, 20); }
 };
 
@@ -100,7 +114,7 @@ function handleUncommon() {
 const rareHandlers = {
     combat: function() { startCombat(getScaledEnemy(getRandomEnemy())); },
     investigate: function() { investigateAvailable = true; document.getElementById("investigate-button").style.display = "block"; },
-    flavor: function() { addMessage("You found nothing of interest."); },
+    flavor: function() { { addMessage(randomFlavorText(exploreFlavors.foundItem) + " " + randomFlavorText(exploreFlavors.discovered))}; },
     loot: function() { loot(25, 35, 30, 40); }
 };
 
@@ -145,7 +159,7 @@ function startCombat(enemy) {
     ui.updateUI();
 }
 
-let enemyScaling = {health: 0.15, attack: 0.07, defense: 0.02};
+let enemyScaling = {health: 0.20, attack: 0.07, defense: 0.04};
 
 function dangerLevel(enemy) {
     let attackValues = enemyPool.map(item => item.attack);
@@ -267,7 +281,7 @@ function applyEnemyDamage(enemy, damage, chosenAttack) {
 function playerAttack(enemy) {
     let weaponBonus = run.currentRace === "human" ? 10 : 0;
     const rawDamage = run.str * 3 + weaponBonus + (run.currentLevel - 1) * 2;
-    const damageReduction = Math.min(enemy.defense * 0.1, 0.5);
+    const damageReduction = Math.min(enemy.defense * 0.2, 0.5);
     const damage = Math.floor(rawDamage *(1 - damageReduction));
     enemy.health -= damage;
     if (enemy.health < 0) enemy.health = 0;
@@ -378,8 +392,6 @@ function checkLevelUp() {
         run.currentExp -= threshold;
         run.currentMaxHealth += 20;
         run.currentMaxStamina += 5;
-        run.currentHealth = run.currentMaxHealth;
-        run.currentStamina = run.currentMaxStamina;
         
         let chance = Math.random();
         let additionalPoint = Math.min(0.25, Math.max(0, run.luck - 10) * 0.01);
@@ -388,9 +400,43 @@ function checkLevelUp() {
             run.skillPoints += 1;
         }
         run.skillPoints ++;
+        confirmLevelUpButton.disabled = true
+        let perkKey = Object.keys(perks);
+        
+        let perk1 = generatePerk(perkKey);
+        let perk2 = generatePerk(perkKey);
+        let perk3 = generatePerk(perkKey);
+        let perkSelection = document.getElementById("perk-selection");
+        perkSelection.innerHTML = `<h3>Choose a perk:</h3>
+            <button id="perk1" data-perk = "${perk1}">${perks[perk1].name} (${perks[perk1].effect})</button>
+            <button id="perk2" data-perk = "${perk2}">${perks[perk2].name} (${perks[perk2].effect})</button>
+            <button id="perk3" data-perk = "${perk3}">${perks[perk3].name} (${perks[perk3].effect})</button>`;
+            perkSelection.querySelectorAll("button").forEach(button => {
+                button.addEventListener("click", function() {
+                    confirmLevelUpButton.disabled = false;
+                    let selectedPerk = this.getAttribute("data-perk");
+                    applyPerk(perks[selectedPerk]);
+                    run.currentHealth = run.currentMaxHealth;
+                    run.currentStamina = run.currentMaxStamina;
+                    addMessage(`You selected the perk: ${perks[selectedPerk].name}`);
+                    perkSelection.innerHTML = "";
+                    run.perks.push(perks[selectedPerk].name);
+                    ui.updateUI();
+                });
+            });
+            
     }
     document.getElementById("level-up-text").innerText = `Congratulations! You've reached level ${run.currentLevel}! You have ${run.skillPoints} skill points to allocate.`;
         
+}
+
+function perkCount(list) {
+    let count = {};
+    list.forEach(perk => {
+        count[perk] = (count[perk] || 0) +1
+        console.log(count[perk]);
+    });
+    return Object.keys(count).map(name => (count[name] > 1 ? `${name} (${count[name]})` : name)).join(", ");
 }
 
 function expToNextLevel() {

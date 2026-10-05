@@ -25,6 +25,7 @@ let defaultRun = {
     inventory: [],
     perks: [],
     abilities: [],
+    confirmLevelUpButtonDisabled: false,
     hasUsedFirstSave: false,
     cursed: {str: 0, dex: 0, end: 0, int: 0, cha: 0, luck: 0}
 };
