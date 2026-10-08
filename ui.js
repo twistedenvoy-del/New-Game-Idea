@@ -243,3 +243,11 @@ confirmLevelUpButton.addEventListener("click", function () {
     ui.updateUI();
     saveRun();
 });
+
+function updateMetaDisplay() {
+    document.getElementById("meta-exp").innerText = `Profile exp: ${profile.metaExp}`;
+}
+
+loadProfile();
+
+updateMetaDisplay();

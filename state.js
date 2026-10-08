@@ -2,6 +2,7 @@ let profile = {
     level: 1,
     metaExp: 0,
     unlockedRaces: ["human", "wolf", "vampire"],
+    upgrades: {}
 };
 
 let defaultRun = {

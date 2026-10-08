@@ -42,3 +42,13 @@ const perks = {
         amount: 1
     },
 }
+
+const upgrades = {
+    strUpgrade: {
+        name: "Strength",
+        effect: "+1 str",
+        stat: "str",
+        amount: 1,
+        cost: 100
+    }
+}
