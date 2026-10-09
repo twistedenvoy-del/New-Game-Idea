@@ -5,9 +5,12 @@ let staged = { str: 0, dex: 0, end: 0, int: 0, cha: 0, luck: 0 };
 let investigateAvailable = false;
 let inventoryOpen = false;
 let chosenItem = null;
+let chosenUpgrade = null;
+let selectedUpgrade = null;
 let selectedElement = null;
 let combatMessages = [];
 let chargedAttack = null;
+let upgradeShopOpen = false;
 
 //---leveling---//
 

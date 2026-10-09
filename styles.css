@@ -37,3 +37,11 @@
     height: 100px;
     overflow-y: auto;
 }
+
+#upgrade-shop {
+    display: none;
+}
+
+.selected-upgrade {
+    background-color: yellow;
+}

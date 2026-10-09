@@ -50,5 +50,40 @@ const upgrades = {
         stat: "str",
         amount: 1,
         cost: 100
+    },
+    dexUpgrade: {
+        name: "Dexterity",
+        effect: "+1 dex",
+        stat: "int",
+        amount: 1,
+        cost: 100
+    },
+    endUpgrade: {
+        name: "Endurance",
+        effect: "+1 end",
+        stat: "end",
+        amount: 1,
+        cost: 100
+    },
+    intUpgrade: {
+        name: "Intelligence",
+        effect: "+1 int",
+        stat: "int",
+        amount: 1,
+        cost: 100
+    },
+    chaUpgrade: {
+        name: "Charisma",
+        effect: "+1 cha",
+        stat: "cha",
+        amount: 1,
+        cost: 100
+    },
+    luckUpgrade: {
+        name: "Luck",
+        effect: "+1 luck",
+        stat: "luck",
+        amount: 1,
+        cost: 100
     }
 }

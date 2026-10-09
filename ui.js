@@ -18,6 +18,7 @@ let ui = {
         document.getElementById("enemy-health").innerText = currentEnemy ? `Enemy Health: ${currentEnemy.health}` : "";
         document.getElementById("combat-menu").style.display = currentEnemy ? "block" : "none";
         document.getElementById("location-screen").style.display = (currentEnemy || inventoryOpen || document.getElementById("level-up-screen").style.display === "block") ? "none" : "block";
+        document.getElementById("upgrade-shop").style.display = upgradeShopOpen ? "block" : "none";
         document.getElementById("inventory-screen").style.display = inventoryOpen ? "block" : "none";
         document.getElementById("exp").innerText = `EXP: ${run.currentExp}`;
         document.getElementById("level").innerText = `Level: ${run.currentLevel}`;
@@ -69,8 +70,12 @@ let returnLuckButton = document.getElementById("luck-down");
 let confirmLevelUpButton = document.getElementById("confirm-level-up");
 let exitButton = document.getElementById("exit-button");
 let inventoryItem = document.getElementById("inventory-items");
+let upgradeList = document.getElementById("upgrade-list");
 let useInventory = document.getElementById("use-inventory-button");
 let combatLog = document.getElementById("combat-log");
+let upgradeShopButton = document.getElementById("upgrade-shop-btn");
+let upgradeReturnButton = document.getElementById("return-button");
+let confirmUpgrade = document.getElementById("confirm-upgrade");
 
 startButton.addEventListener("click", function () {
     let selectedRace = raceSelect.value;
@@ -82,6 +87,31 @@ startButton.addEventListener("click", function () {
     gameScreen.style.display = "block";
     raceSelectDiv.style.display = "none";
     ui.updateUI();
+});
+
+upgradeShopButton.addEventListener("click", () => {
+    upgradeShopOpen = true;
+    raceSelectDiv.style.display = "none";
+    buildUpgradeShop();
+    ui.updateUI();
+});
+
+upgradeReturnButton.addEventListener("click", () => {
+    upgradeShopOpen = false;
+    chosenUpgrade = null;
+    selectedUpgrade = null;
+    raceSelectDiv.style.display = "block";
+    ui.updateUI();
+});
+
+confirmUpgrade.addEventListener("click", () => {
+    console.log("buy clicked", chosenUpgrade);
+    if (chosenUpgrade) {
+    purchaseUpgrade(chosenUpgrade);
+    chosenUpgrade = null;
+    updateMetaDisplay();
+    buildUpgradeShop();
+    };
 });
 
 inventoryButton.addEventListener("click", function () {
@@ -246,6 +276,22 @@ confirmLevelUpButton.addEventListener("click", function () {
 
 function updateMetaDisplay() {
     document.getElementById("meta-exp").innerText = `Profile exp: ${profile.metaExp}`;
+    document.getElementById("shop-meta-exp").innerText = `Profile exp: ${profile.metaExp}`;
+}
+
+function buildUpgradeShop() {
+    upgradeList.innerHTML = "";
+    for (let key in upgrades) {
+        let shop = document.createElement("button");
+        shop.addEventListener("click", () => {
+            chosenUpgrade = key;
+            if (selectedUpgrade) {selectedUpgrade.classList.remove("selected")}
+    shop.classList.add("selected");
+    selectedUpgrade = shop;
+        })
+        shop.innerText = `${upgrades[key].name} \n ${upgrades[key].effect} \n Cost: ${getUpgradeCost(key)} \n ${profile.upgrades[key] || 0}`;
+        upgradeList.appendChild(shop);
+    }
 }
 
 loadProfile();
