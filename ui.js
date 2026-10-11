@@ -144,13 +144,10 @@ attackButton.addEventListener("click", function () {
     if (currentEnemy) {
         playerAttack(currentEnemy);
         if (currentEnemy.health <= 0) {
-            let reward = (Math.floor(expGainAmount + (currentEnemy.maxHealth * 0.2)));
-            currentEnemy = null;
-            expGain(reward);
-             document.getElementById("combat-menu").style.display = "none";
-            
+            victoryUpdate();
         } else {
             enemyAttack(currentEnemy);
+            victoryUpdate();
             checkGameOver();
         }
         ui.updateUI();
@@ -162,6 +159,7 @@ attackButton.addEventListener("click", function () {
 defendButton.addEventListener("click", function () {
     isDefending = true;
     enemyAttack(currentEnemy);
+    victoryUpdate();
     isDefending = false;
     checkGameOver();
     ui.updateUI();
@@ -183,6 +181,7 @@ fleeButton.addEventListener("click", function () {
         fleeCombat();
         ui.updateUI();
     } else {
+        victoryUpdate();
         alert("No enemy to flee from!");
     }
 });
@@ -292,6 +291,17 @@ function buildUpgradeShop() {
         shop.innerText = `${upgrades[key].name} \n ${upgrades[key].effect} \n Cost: ${getUpgradeCost(key)} \n ${profile.upgrades[key] || 0}`;
         upgradeList.appendChild(shop);
     }
+}
+
+function victoryUpdate() {
+    if (currentEnemy && currentEnemy.health <= 0) {
+            let reward = (Math.floor(expGainAmount + (currentEnemy.maxHealth * 0.2)));
+            currentEnemy = null;
+            expGain(reward);
+             document.getElementById("combat-menu").style.display = "none";
+             return true;
+    }
+    return false;
 }
 
 loadProfile();

@@ -9,7 +9,7 @@ function startCombat(enemy) {
     ui.updateUI();
 }
 
-let enemyScaling = {health: 0.20, attack: 0.07, defense: 0.04};
+let enemyScaling = {health: 0.20, attack: 0.12, defense: 0.04};
 
 function dangerLevel(enemy) {
     let attackValues = enemyPool.map(item => item.attack);
@@ -115,6 +115,25 @@ function calculateDamage(attackValue) {
     return Math.floor(Math.max(minAttack, attackValue - (attackValue * endDamage)));
 }
 
+function calculatePlayerDamage(enemy) {
+    let weaponBonus = run.currentRace === "human" ? 10 : 0;
+    const rawDamage = run.str * 3 + weaponBonus + (run.currentLevel - 1) * 2;
+    const damageReduction = Math.min(enemy.defense * 0.01, 0.5);
+    const damage = Math.floor(rawDamage *(1 - damageReduction));
+    return damage;
+}
+
+function getCounterChance() {
+    if (run.dex < 15) {
+        return 0;
+    }
+    else {
+        let baseChance = 0.25;
+        let improvedChance = Math.min(baseChance + (run.dex -15) * 0.02, 0.60);
+        return improvedChance;
+    }
+}
+
 function applyEnemyDamage(enemy, damage, chosenAttack) {
     if (isDefending) {
         const reducedDamage = Math.floor(Math.max(0, damage) / 2);
@@ -129,10 +148,7 @@ function applyEnemyDamage(enemy, damage, chosenAttack) {
 }
 
 function playerAttack(enemy) {
-    let weaponBonus = run.currentRace === "human" ? 10 : 0;
-    const rawDamage = run.str * 3 + weaponBonus + (run.currentLevel - 1) * 2;
-    const damageReduction = Math.min(enemy.defense * 0.1, 0.5);
-    const damage = Math.floor(rawDamage *(1 - damageReduction));
+    const damage = calculatePlayerDamage(enemy);
     enemy.health -= damage;
     if (enemy.health < 0) enemy.health = 0;
     addMessage(`You attacked the ${enemy.name} for ${damage} damage!`);
@@ -157,6 +173,12 @@ function enemyAttack(enemy) {
     
     if (didEnemeyMiss()) {
         addMessage(`The ${enemy.name} missed their attack!`);
+        if (Math.random() < getCounterChance()) {
+            let damage = Math.floor(calculatePlayerDamage(enemy) * Math.min( 1.25 + Math.max(0, run.dex - 15) * 0.02 , 2.0 ));
+            enemy.health -= damage;
+            if (enemy.health < 0) enemy.health = 0;
+            addMessage(`You counter ${enemy.name}'s attack and dealt ${damage} to them`)
+        }
         return;
     }
 
